@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="readme.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/DelegateFactory/DelegateFactory.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/DelegateFactory.Test/DelegateFactory.Test.csproj" />
+  </Folder>
+</Solution>
