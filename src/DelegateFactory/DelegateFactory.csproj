@@ -4,6 +4,19 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+  <!-- NuGet package properties -->
+  <PackageId>DelegateFactory</PackageId>
+  <Version>1.0.0</Version>
+  <Authors>wgross@text-mode.de</Authors>
+  <Company></Company>
+  <Description>Supports dependency injection to delegates by injecting arguments of a given delegate with services from an IServiceProvider. Inspired by ASP.Net RequestDelegateFactory.</Description>
+  <PackageProjectUrl>https://github.com/wgross/DelegateFactory</PackageProjectUrl>
+  <RepositoryUrl>https://github.com/wgross/DelegateFactory</RepositoryUrl>
+  <RepositoryType>git</RepositoryType>
+  <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  <PackageTags>dependency-injection;delegate;factory;dotnet;serviceprovider</PackageTags>
+  <Copyright>Copyright © 2025 wgross</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
