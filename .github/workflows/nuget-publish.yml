@@ -1,10 +1,13 @@
+# yaml-language-server: $schema=https://www.schemastore.org/github-workflow.json
+
 # This workflow builds the DelegateFactory project and pushes the NuGet package to nuget.org on release.
+
 name: Build and Publish NuGet
 
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
 
 jobs:
   build:
@@ -16,7 +19,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: "10.0.x"
 
       - name: Restore dependencies
         run: dotnet restore src/DelegateFactory/DelegateFactory.csproj

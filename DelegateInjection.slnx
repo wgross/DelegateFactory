@@ -3,9 +3,9 @@
     <File Path="readme.md" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="src/DelegateFactory/DelegateInjection.csproj" />
+    <Project Path="src/DelegateInjection/DelegateInjection.csproj" />
   </Folder>
   <Folder Name="/test/">
-    <Project Path="test/DelegateFactory.Test/DelegateFactory.Test.csproj" />
+    <Project Path="test/DelegateInjection.Test/DelegateInjection.Test.csproj" />
   </Folder>
 </Solution>

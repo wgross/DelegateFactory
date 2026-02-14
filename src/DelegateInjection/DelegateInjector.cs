@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace DelegateFactory;
+namespace DelegateInjection;
 
 using static System.Linq.Expressions.Expression;
 
@@ -10,12 +10,12 @@ using static System.Linq.Expressions.Expression;
 /// Implements partial application for delegates by inspection of the delegates parameters and
 /// the available services in the given <see cref="IServiceProvider"/>.
 /// </summary>
-public class DelegateInjection(IServiceProvider serviceProvider)
+public sealed class DelegateInjector(IServiceProvider serviceProvider)
 {
     private readonly IServiceProvider serviceProvider = serviceProvider;
     private readonly IServiceProviderIsService serviceProviderIsService = serviceProvider.GetRequiredService<IServiceProviderIsService>();
 
-    class KnownMethods
+    private class KnownMethods
     {
         public static readonly MethodInfo GetRequiredServiceMethod = typeof(ServiceProviderServiceExtensions).GetMethod(
             name: nameof(ServiceProviderServiceExtensions.GetRequiredService),
@@ -25,7 +25,7 @@ public class DelegateInjection(IServiceProvider serviceProvider)
         public static MethodInfo GetRequiredServiceByTypeParamMethod(Type type) => GetRequiredServiceMethod.MakeGenericMethod(type);
     }
 
-    class KnownExpressions
+    private class KnownExpressions
     {
         // this pulls dependency at every invocation: KnownExpressions.GetRequiredServiceMethodCallExpression(sp, p.ParameterType)
         // this might still be useful. It could be a property of the created delegate to update
@@ -40,26 +40,38 @@ public class DelegateInjection(IServiceProvider serviceProvider)
     }
 
     /// <summary>
-    /// Apply dependency from <paramref name="appliedFromServices"/> to the delegate <paramref name="appliedToDelegate"/>  and returns
+    /// Apply dependency from <paramref name="injectFromServices"/> to the delegate <paramref name="injectDelegate"/>  and returns
     /// a newly compiled delegate of type <typeparamref name="T"/>.
     /// </summary>
-    public static T Apply<T>(Delegate appliedToDelegate, IServiceProvider appliedFromServices) where T : Delegate => (T)CreateAppliedLambda(
-        appliedToDelegate,
+    public static T Apply<T>(Delegate injectDelegate, IServiceProvider injectFromServices) where T : Delegate => (T)Apply(injectDelegate, injectFromServices);
+
+    /// <summary>
+    /// Apply dependency from <paramref name="appliedFromServices"/> to the delegate <paramref name="injectDelegate"/>  and returns
+    /// a newly compiled delegate.
+    /// </summary>
+    public static Delegate Apply(Delegate injectDelegate, IServiceProvider appliedFromServices) => CreateInjectedDelegate(
+        injectDelegate,
         appliedFromServices,
         appliedFromServices.GetRequiredService<IServiceProviderIsService>(),
         KnownExpressions.ResolvedGetRequiredServiceExpression).Compile();
 
     /// <summary>
-    /// Apply dependency from the <see cref="IServiceProvider"/> given in the constructor to the delegate <paramref name="appliedToDelegate"/>  and returns
+    /// Apply dependency from the <see cref="IServiceProvider"/> given in the constructor to the delegate <paramref name="injectDelegate"/>  and returns
     /// a newly compiled delegate of type <typeparamref name="T"/>.
     /// </summary>
-    public T Apply<T>(Delegate appliedToDelegate) where T : Delegate => (T)CreateAppliedLambda(
-        appliedToDelegate,
+    public T Apply<T>(Delegate injectDelegate) where T : Delegate => (T)this.Apply(injectDelegate);
+
+    /// <summary>
+    /// Apply dependency from the <see cref="IServiceProvider"/> given in the constructor to the delegate <paramref name="injectDelegate"/>  and returns
+    /// a newly compiled delegate.
+    /// </summary>
+    public Delegate Apply(Delegate injectDelegate) => CreateInjectedDelegate(
+        injectDelegate,
         this.serviceProvider,
         this.serviceProviderIsService,
         KnownExpressions.ResolvedGetRequiredServiceExpression).Compile();
 
-    private static LambdaExpression CreateAppliedLambda(
+    private static LambdaExpression CreateInjectedDelegate(
         Delegate d,
         IServiceProvider sp,
         IServiceProviderIsService isService,

@@ -1,19 +1,17 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-using static Xunit.Assert;
+namespace DelegateInjection.Test;
 
-namespace DelegateFactory.Test;
-
-public class DelegateInjectionTest
+public class DelegateInjectorTest
 {
     private readonly ServiceCollection serviceCollection;
 
-    public DelegateInjectionTest()
+    public DelegateInjectorTest()
     {
         this.serviceCollection = new ServiceCollection();
     }
 
-    static int globalWasCalled = 0;
+    private static int globalWasCalled = 0;
 
     [Fact]
     public void Apply_static_Action()
@@ -23,7 +21,7 @@ public class DelegateInjectionTest
         void Test() { globalWasCalled++; }
 
         // ACT
-        var result = DelegateInjection.Apply<Action>(Test, serviceCollection.BuildServiceProvider());
+        var result = DelegateInjector.Apply<Action>(Test, serviceCollection.BuildServiceProvider());
         result();
 
         // ASSERT
@@ -39,7 +37,7 @@ public class DelegateInjectionTest
         void Test() { wasCalled++; }
 
         // ACT
-        var result = DelegateInjection.Apply<Action>(Test, serviceCollection.BuildServiceProvider());
+        var result = DelegateInjector.Apply<Action>(Test, serviceCollection.BuildServiceProvider());
         result();
 
         // ASSERT
@@ -54,7 +52,7 @@ public class DelegateInjectionTest
         void Test(int i) { globalWasCalled = i; }
 
         // ACT
-        var result = new DelegateInjection(serviceCollection.BuildServiceProvider()).Apply<Action<int>>(Test);
+        var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Action<int>>(Test);
         result(99);
 
         // ASSERT
@@ -70,7 +68,7 @@ public class DelegateInjectionTest
         void Test(int i) { wasCalled = i; }
 
         // ACT
-        var result = new DelegateInjection(serviceCollection.BuildServiceProvider()).Apply<Action<int>>(Test);
+        var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Action<int>>(Test);
         result(99);
 
         // ASSERT
@@ -94,7 +92,7 @@ public class DelegateInjectionTest
 
         this.serviceCollection.AddTransient<IntProvider>();
         // ACT
-        var result = new DelegateInjection(serviceCollection.BuildServiceProvider()).Apply<Action>(Test);
+        var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Action>(Test);
         result();
 
         // ASSERT
@@ -112,7 +110,7 @@ public class DelegateInjectionTest
         this.serviceCollection.AddTransient<IntProvider>();
 
         // ACT
-        var result = new DelegateInjection(serviceCollection.BuildServiceProvider()).Apply<Action>(Test);
+        var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Action>(Test);
         result();
 
         // ASSERT
@@ -129,7 +127,8 @@ public class DelegateInjectionTest
 
         this.serviceCollection.AddTransient<IntProvider>();
         // ACT
-        var result = new DelegateInjection(serviceCollection.BuildServiceProvider()).Apply<Action<int>>(Test);
+        var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Action<int>>(Test);
+
         result(99);
 
         // ASSERT
@@ -147,7 +146,7 @@ public class DelegateInjectionTest
         this.serviceCollection.AddTransient<IntProvider>();
 
         // ACT
-        var result = new DelegateInjection(serviceCollection.BuildServiceProvider()).Apply<Action<int>>(Test);
+        var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Action<int>>(Test);
         result(99);
 
         // ASSERT
@@ -165,7 +164,7 @@ public class DelegateInjectionTest
         this.serviceCollection.AddTransient<IntProvider>();
 
         // ACT
-        var result = new DelegateInjection(serviceCollection.BuildServiceProvider()).Apply<Func<int, int>>(Test);
+        var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Func<int, int>>(Test);
         var output = result(99);
 
         // ASSERT
@@ -184,7 +183,8 @@ public class DelegateInjectionTest
         this.serviceCollection.AddTransient<IntProvider>();
 
         // ACT
-        var result = new DelegateInjection(serviceCollection.BuildServiceProvider()).Apply<Func<int, int>>(Test);
+        var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Func<int, int>>(Test);
+
         var output = result(99);
 
         // ASSERT
@@ -207,7 +207,7 @@ public class DelegateInjectionTest
         this.serviceCollection.AddTransient<IntProvider>();
 
         // ACT
-        var result = new DelegateInjection(serviceCollection.BuildServiceProvider()).Apply<Func<int, Task<int>>>(Test);
+        var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Func<int, Task<int>>>(Test);
         var output = await result(99);
 
         // ASSERT
@@ -230,7 +230,7 @@ public class DelegateInjectionTest
         this.serviceCollection.AddTransient<IntProvider>();
 
         // ACT
-        var result = new DelegateInjection(serviceCollection.BuildServiceProvider()).Apply<Func<int, Task<int>>>(Test);
+        var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Func<int, Task<int>>>(Test);
         var output = await result(99);
 
         // ASSERT
@@ -253,7 +253,7 @@ public class DelegateInjectionTest
         this.serviceCollection.AddTransient<IntProvider>();
 
         // ACT
-        var result = new DelegateInjection(serviceCollection.BuildServiceProvider()).Apply<Func<int, Task<int>>>(Test);
+        var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Func<int, Task<int>>>(Test);
         var _ = await result(99);
         var output = await result(99);
 

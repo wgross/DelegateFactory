@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\DelegateFactory\DelegateInjection.csproj" />
+    <ProjectReference Include="..\..\src\DelegateInjection\DelegateInjection.csproj" />
   </ItemGroup>
 
   <ItemGroup>
