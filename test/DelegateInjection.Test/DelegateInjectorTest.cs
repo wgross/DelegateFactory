@@ -4,261 +4,300 @@ namespace DelegateInjection.Test;
 
 public class DelegateInjectorTest
 {
-    private readonly ServiceCollection serviceCollection;
+    private readonly IServiceCollection serviceCollection;
 
     public DelegateInjectorTest()
     {
-        this.serviceCollection = new ServiceCollection();
+        this.serviceCollection = new ServiceCollection().AddDelegateInjection();
     }
 
-    private static int globalWasCalled = 0;
+    public class Dependency
+    {
+        public int Value { get; set; } = 0;
+    }
+
+    private static Dependency global = new();
 
     [Fact]
     public void Apply_static_Action()
     {
         // ARRANGE
-        globalWasCalled = 0;
-        void Test() { globalWasCalled++; }
+        static void Test() => global.Value = 1;
 
         // ACT
         var result = DelegateInjector.Apply<Action>(Test, serviceCollection.BuildServiceProvider());
         result();
 
         // ASSERT
-        Equal(1, globalWasCalled);
+        True(global is { Value: 1 });
     }
 
     [Fact]
     public void Apply_instance_Action()
     {
         // ARRANGE
-        int wasCalled = 0;
-
-        void Test() { wasCalled++; }
+        void Test() => global.Value = 2;
 
         // ACT
         var result = DelegateInjector.Apply<Action>(Test, serviceCollection.BuildServiceProvider());
         result();
 
         // ASSERT
-        Equal(1, wasCalled);
+        True(global is { Value: 2 });
     }
 
     [Fact]
     public void Apply_static_Action_p1()
     {
         // ARRANGE
-        globalWasCalled = 0;
-        void Test(int i) { globalWasCalled = i; }
+        static void Test(int i) => global.Value = i + 1;
 
         // ACT
         var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Action<int>>(Test);
         result(99);
 
         // ASSERT
-        Equal(99, globalWasCalled);
+        True(global is { Value: 100 });
     }
 
     [Fact]
     public void Apply_instance_Action_p1()
     {
         // ARRANGE
-        int wasCalled = 0;
-
-        void Test(int i) { wasCalled = i; }
+        void Test(int i) { global.Value = i + 1; }
 
         // ACT
         var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Action<int>>(Test);
-        result(99);
+        result(999);
 
         // ASSERT
-        Equal(99, wasCalled);
-    }
-
-    public class IntProvider
-    {
-        private int i = 0;
-
-        public int Get() => ++i;
+        True(global is { Value: 1000 });
     }
 
     [Fact]
     public void Apply_static_Action_DI()
     {
         // ARRANGE
-        globalWasCalled = 0;
+        Dependency injected = new();
 
-        void Test(IntProvider intProvider) { globalWasCalled = intProvider.Get(); }
+        static void Test(Dependency d)
+        {
+            d.Value = 1;
+        }
 
-        this.serviceCollection.AddTransient<IntProvider>();
+        this.serviceCollection.AddTransient(sp => injected);
+
         // ACT
         var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Action>(Test);
         result();
 
         // ASSERT
-        Equal(1, globalWasCalled);
+        True(injected is { Value: 1 });
     }
 
     [Fact]
     public void Apply_instance_Action_DI()
     {
         // ARRANGE
-        int wasCalled = 0;
+        Dependency? injected = null;
 
-        void Test(IntProvider intProvider) { wasCalled = intProvider.Get(); }
+        void Test(Dependency d)
+        {
+            injected = d;
+            injected.Value = 1;
+        }
 
-        this.serviceCollection.AddTransient<IntProvider>();
+        this.serviceCollection.AddTransient<Dependency>();
 
         // ACT
         var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Action>(Test);
         result();
 
         // ASSERT
-        Equal(1, wasCalled);
+        True(injected is { Value: 1 });
     }
 
     [Fact]
     public void Apply_static_Action_DI_p1()
     {
         // ARRANGE
-        globalWasCalled = 0;
+        Dependency injected = new();
 
-        void Test(int i, IntProvider intProvider) { globalWasCalled = intProvider.Get() + i; }
+        static void Test(int i, Dependency d) => d.Value = i + 1;
 
-        this.serviceCollection.AddTransient<IntProvider>();
+        this.serviceCollection.AddTransient(sp => injected);
+
         // ACT
         var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Action<int>>(Test);
 
         result(99);
 
         // ASSERT
-        Equal(100, globalWasCalled);
+        True(injected is { Value: 100 });
     }
 
     [Fact]
     public void Apply_instance_Action_DI_p1()
     {
         // ARRANGE
-        int wasCalled = 0;
+        Dependency? injected = new();
 
-        void Test(int i, IntProvider intProvider) { wasCalled = intProvider.Get() + i; }
+        void Test(int i, Dependency d) => d.Value = i + 1;
 
-        this.serviceCollection.AddTransient<IntProvider>();
+        this.serviceCollection.AddTransient(sp => injected);
 
         // ACT
         var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Action<int>>(Test);
         result(99);
 
         // ASSERT
-        Equal(100, wasCalled);
+        True(injected is { Value: 100 });
     }
 
     [Fact]
     public void Apply_static_Func_DI_p1()
     {
         // ARRANGE
-        globalWasCalled = 0;
+        Dependency injected = new();
 
-        int Test(int i, IntProvider intProvider) { globalWasCalled = intProvider.Get() + i; return globalWasCalled; }
+        static int Test(int i, Dependency d)
+        {
+            d.Value = i + 2;
+            return d.Value + 1;
+        }
 
-        this.serviceCollection.AddTransient<IntProvider>();
+        this.serviceCollection.AddTransient(sp => injected);
 
         // ACT
         var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Func<int, int>>(Test);
-        var output = result(99);
+        var retVal = result(88);
 
         // ASSERT
-        Equal(100, globalWasCalled);
-        Equal(100, output);
+        True(injected is { Value: 90 });
+        Equal(91, retVal);
     }
 
     [Fact]
-    public void Apply_instance_Func_DI_p1()
+    public void Apply_static_Func_DI_p1_args()
     {
         // ARRANGE
-        int wasCalled = 0;
+        Dependency injected = new();
+        Dependency? injectedArg = new();
 
-        int Test(int i, IntProvider intProvider) { wasCalled = intProvider.Get() + i; return wasCalled; }
+        static int Test(int i, Dependency d)
+        {
+            d.Value = i + 2;
+            return d.Value + 1;
+        }
 
-        this.serviceCollection.AddTransient<IntProvider>();
+        this.serviceCollection.AddTransient(sp => injected);
 
         // ACT
-        var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Func<int, int>>(Test);
-
-        var output = result(99);
+        var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Func<int, int>>(Test, injectedArg);
+        var retVal = result(88);
 
         // ASSERT
-        Equal(100, wasCalled);
-        Equal(100, output);
+        True(injectedArg is { Value: 90 });
+        Equal(91, retVal);
+    }
+
+    [Fact]
+    public void Apply_instance_Func_DI_p1_args()
+    {
+        // ARRANGE
+        Dependency? injected = null;
+        Dependency? injectedArg = new();
+
+        int Test(int i, Dependency d)
+        {
+            injected = d;
+            injected.Value = i + 2;
+            return injected.Value + 1;
+        }
+
+        this.serviceCollection.AddTransient<Dependency>();
+
+        // ACT
+        var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Func<int, int>>(Test, injectedArg);
+        var retVal = result(98);
+
+        // ASSERT
+        Same(injectedArg, injected);
+        True(injectedArg is { Value: 100 });
+        Equal(101, retVal);
     }
 
     [Fact]
     public async Task Apply_static_Func_DI_p_async()
     {
         // ARRANGE
-        globalWasCalled = 0;
+        Dependency? injected = new();
 
-        async Task<int> Test(int i, IntProvider intProvider)
+        static async Task<int> Test(int i, Dependency d)
         {
             await Task.Delay(100);
-            globalWasCalled = intProvider.Get() + i; return globalWasCalled;
+            d.Value = i + 3;
+            return d.Value + 1;
         }
 
-        this.serviceCollection.AddTransient<IntProvider>();
+        this.serviceCollection.AddTransient(sp => injected);
 
         // ACT
         var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Func<int, Task<int>>>(Test);
-        var output = await result(99);
+        var output = await result(97);
 
         // ASSERT
-        Equal(100, globalWasCalled);
-        Equal(100, output);
+        True(injected is { Value: 100 });
+        Equal(101, output);
     }
 
     [Fact]
     public async Task Apply_instance_Func_DI_p_async()
     {
         // ARRANGE
-        int wasCalled = 0;
+        Dependency? injected = null;
 
-        async Task<int> Test(int i, IntProvider intProvider)
+        async Task<int> Test(int i, Dependency d)
         {
             await Task.Delay(100);
-            wasCalled = intProvider.Get() + i; return wasCalled;
+            injected = d;
+            injected.Value = i + 3;
+            return injected.Value + 1;
         }
-
-        this.serviceCollection.AddTransient<IntProvider>();
+        this.serviceCollection.AddTransient<Dependency>();
 
         // ACT
         var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Func<int, Task<int>>>(Test);
-        var output = await result(99);
+        var output = await result(97);
 
         // ASSERT
-        Equal(100, wasCalled);
-        Equal(100, output);
+        True(injected is { Value: 100 });
+        Equal(101, output);
     }
 
     [Fact]
     public async Task Dependency_is_injected_once_on_creation()
     {
         // ARRANGE
-        int wasCalled = 0;
+        Dependency? injected = null;
 
-        async Task<int> Test(int i, IntProvider intProvider)
+        async Task<int> Test(int i, Dependency d)
         {
             await Task.Delay(100);
-            wasCalled = intProvider.Get() + i; return wasCalled;
+            injected = d;
+            injected.Value = i + 3;
+            return injected.Value + 1;
         }
 
-        this.serviceCollection.AddTransient<IntProvider>();
+        this.serviceCollection.AddTransient<Dependency>();
 
         // ACT
         var result = new DelegateInjector(serviceCollection.BuildServiceProvider()).Apply<Func<int, Task<int>>>(Test);
-        var _ = await result(99);
-        var output = await result(99);
+        var _ = await result(97);
+        var output = await result(97);
 
         // ASSERT
-        Equal(101, wasCalled);
+        True(injected is { Value: 100 });
         Equal(101, output);
     }
 }
