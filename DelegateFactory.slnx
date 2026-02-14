@@ -3,7 +3,7 @@
     <File Path="readme.md" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="src/DelegateFactory/DelegateFactory.csproj" />
+    <Project Path="src/DelegateFactory/DelegateInjection.csproj" />
   </Folder>
   <Folder Name="/test/">
     <Project Path="test/DelegateFactory.Test/DelegateFactory.Test.csproj" />

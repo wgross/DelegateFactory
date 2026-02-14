@@ -10,7 +10,7 @@ using static System.Linq.Expressions.Expression;
 /// Implements partial application for delegates by inspection of the delegates parameters and
 /// the available services in the given <see cref="IServiceProvider"/>.
 /// </summary>
-public class DelegateFactory(IServiceProvider serviceProvider)
+public class DelegateInjection(IServiceProvider serviceProvider)
 {
     private readonly IServiceProvider serviceProvider = serviceProvider;
     private readonly IServiceProviderIsService serviceProviderIsService = serviceProvider.GetRequiredService<IServiceProviderIsService>();
