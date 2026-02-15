@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   <!-- NuGet package properties -->
-  <PackageId>DelegateFactory</PackageId>
+  <PackageId>DelegateInjection</PackageId>
   <Version>1.1.0</Version>
   <Authors>wgross@text-mode.de</Authors>
   <Company></Company>

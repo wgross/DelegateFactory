@@ -67,3 +67,18 @@ Invoking of the delegate is supported for delegates of type:
  - `Action<CancellationToken>`
  - `Func<Task>`
  - `Func<CancellationToken,Task>`
+
+ ### Advanced examples
+ 
+ The project in `examples/MvvmCommands` shown an advanced use case. 
+ A `RelayCommand` from the Mvvm Community extension is build with a delegate that requires a dependency fom the service provider. 
+ Instead of injecting it as well in the view model and keeping it there in a member variable the `RelayCommandBuider` injects it to the delegate given to the command for execution directly.
+ 
+ ```csharp
+ static void ExecutedBusinessLogic(Dependency dependency) => Console.WriteLine("command was executed: " + dependency.GetText());
+
+ RelayCommand command = serviceProvider.GetRequiredService<RelayCommandBuilder>().From(ExecutedBusinessLogic);
+ ```
+
+The same could be done for the Can-Execute handler. 
+By using this command bulder the number of dependencies injected in the view model can be reduced. The dependencies for the business logic are provided by the RelayCommand builder to the executed delegate instead of the view model.

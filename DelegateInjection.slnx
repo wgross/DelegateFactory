@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/examples/">
+    <Project Path="examples/MvvmCommands/MvvmCommands.csproj" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path="readme.md" />
   </Folder>
